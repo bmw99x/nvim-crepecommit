@@ -1,6 +1,8 @@
-# nvim-crepecommit
+<img width="1560" height="698" alt="image" src="https://github.com/user-attachments/assets/801bb3e6-05be-41fa-98b8-6383b24ec9f6" /># nvim-crepecommit
 
 Thin wrapper. Reads your staged diff, writes your commit message.
+<img width="1668" height="700" alt="image" src="https://github.com/user-attachments/assets/7b02aefb-9d07-4349-ac0d-9c34ff0a23be" />
+
 
 ## ⇁ The Problem
 
