@@ -1,23 +1,25 @@
+# nvim-crepecommit
+
 Thin wrapper. Reads your staged diff, writes your commit message.
+
 <img width="1668" height="700" alt="image" src="https://github.com/user-attachments/assets/7b02aefb-9d07-4349-ac0d-9c34ff0a23be" />
 
-
-## ⇁ The Problem
+## The Problem
 
 You stage your changes. You open the commit buffer. You stare at it.
 You know what you did. Writing it down in the right format is the boring part.
 
-## ⇁ How It Works
+## How It Works
 
-`git-commit-msg` pipes your staged diff into `claude -p` with a
+`git-commit-msg` pipes your staged diff into an AI CLI with a
 [Conventional Commits](https://www.conventionalcommits.org) prompt. No session,
 no tools, no round-trips — just the diff in, a message out.
 
 ```
-git diff --cached  →  claude -p  →  feat(auth): add token refresh on 401
+git diff --cached  →  AI CLI  →  feat(auth): add token refresh on 401
 ```
 
-Claude picks the type (`feat`, `fix`, `refactor`, etc.) and scope from
+The AI picks the type (`feat`, `fix`, `refactor`, etc.) and scope from
 the files changed, writes the subject in imperative mood, and adds a body
 only when the why isn't obvious from the diff alone.
 
@@ -26,42 +28,82 @@ When it lands, the buffer is editable — fix anything before confirming.
 `<CR>` inserts into your gitcommit buffer or yanks to clipboard if you're
 not in one. `q` or `<Esc>` to bail.
 
-## ⇁ Requirements
+## Supported AI Providers
 
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) — must be
-  in `$PATH` as `claude`
-- Neovim 0.10+
-- `git-commit-msg` script somewhere in `$PATH`
+This plugin works with two AI CLI tools:
 
-## ⇁ Installation
+| | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | [opencode](https://opencode.ai) |
+|---|---|---|
+| **Script** | `git-commit-msg` | `opencode-git-commit-msg` |
+| **Models** | Anthropic (Claude) | 75+ providers (GLM, Kimi, Qwen, DeepSeek, etc.) |
+| **Setup** | Just works | Provider setup required |
+| **nvim spec** | `nvim/git.lua` | `nvim/opencode-git.lua` |
+| **Inline skill** | `claude-plugin/` | `opencode/skills/` |
 
-**1. Install the script**
+## Installation
 
+### 1. Install the script for your chosen AI CLI
+
+**Claude Code** (Anthropic, no config needed):
 ```bash
 cp git-commit-msg ~/.local/bin/git-commit-msg
 chmod +x ~/.local/bin/git-commit-msg
 ```
 
-**2. Add the nvim spec** to your lazy.nvim config (drop `nvim/git.lua` into
-`lua/plugins/` or copy the relevant spec into your existing git plugin file):
+**opencode** (any model, provider setup required):
+```bash
+cp opencode-git-commit-msg ~/.local/bin/opencode-git-commit-msg
+cp opencode-setup-provider ~/.local/bin/opencode-setup-provider
+chmod +x ~/.local/bin/opencode-git-commit-msg
+chmod +x ~/.local/bin/opencode-setup-provider
+```
+
+### 2. Set up provider (opencode only)
+
+```bash
+# Show current config
+opencode-setup-provider --show
+
+# Choose a provider
+opencode-setup-provider --provider opencode-go   # GLM-5.1, Kimi K2.6, Qwen 3.6, DeepSeek V4 ($5/mo)
+opencode-setup-provider --provider anthropic     # Claude models
+opencode-setup-provider --provider openai        # GPT models
+opencode-setup-provider --provider ollama        # Local models
+```
+
+See all [opencode providers](https://opencode.ai/docs/providers).
+
+**GLM-5.1**: Subscribe to [OpenCode Go](https://opencode.ai/go) ($5 first month, then $10/mo).
+
+### 3. Add the nvim spec
 
 ```lua
--- lazy.nvim
+-- For Claude Code
 { import = "plugins.git" }
+
+-- For opencode
+{ import = "plugins.opencode-git" }
 ```
 
 The keymap is `<leader>gC`. No other setup required.
 
-## ⇁ Files
+## Files
 
 ```
-git-commit-msg          shell script — the AI call lives here
-nvim/git.lua            lazy.nvim spec — floating UI + keymap
-claude-plugin/          Claude Code skill (/git-commit in Claude sessions)
+git-commit-msg              Claude Code script
+opencode-git-commit-msg     opencode script (defaults to GLM-5.1 via opencode-go)
+opencode-setup-provider     Provider configuration script
+nvim/git.lua                lazy.nvim spec — Claude Code
+nvim/opencode-git.lua       lazy.nvim spec — opencode
+claude-plugin/              Claude Code /git-commit skill
+opencode/skills/            opencode /git-commit skill
 ```
 
-## ⇁ Claude Code Skill
+## Inline Skills
 
-If you use Claude Code, the plugin registers a `/git-commit` skill that does
-the same thing inline — reads staged changes and generates the message for you
-to paste or commit directly.
+Both AI CLIs have `/git-commit` skill support:
+
+- **Claude Code**: `claude-plugin/plugins/git-commit/SKILL.md`
+- **opencode**: `opencode/skills/git-commit/SKILL.md`
+
+Generate commit messages from within a session instead of triggering the nvim plugin.
