@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROVIDER_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/providers"
+
+usage() {
+  cat << EOF
+Usage: opencode-setup-provider [OPTIONS]
+
+Configure the default provider for opencode git-commit-msg script.
+
+Providers:
+  anthropic   Anthropic (Claude) - default
+  openai       OpenAI (GPT models)
+  ollama       Ollama (local models)
+  custom       Custom provider via environment variable
+
+Options:
+  -p, --provider NAME    Set the default provider
+  -s, --show            Show current provider configuration
+  -r, --reset           Remove provider configuration (use default)
+
+Examples:
+  opencode-setup-provider --provider anthropic
+  opencode-setup-provider --provider ollama
+  opencode-setup-provider --show
+
+For custom providers, set OPENCODE_PROVIDER manually:
+  export OPENCODE_PROVIDER=custom
+  export OPENCODE_API_BASE=https://api.example.com/v1
+  export OPENCODE_MODEL=your-model
+EOF
+}
+
+show_config() {
+  echo "Current opencode provider configuration:"
+  echo ""
+  echo "  OPENCODE_PROVIDER=${OPENCODE_PROVIDER:-not set}"
+  echo "  Config file: ${PROVIDER_FILE:-not configured}"
+  echo ""
+  echo "Current provider: $(get_current_provider)"
+  echo ""
+  echo "To change provider, run with --provider <name>"
+}
+
+get_current_provider() {
+  if [[ -n "${OPENCODE_PROVIDER:-}" ]]; then
+    echo "$OPENCODE_PROVIDER (env)"
+  elif [[ -f "$PROVIDER_FILE" ]]; then
+    cat "$PROVIDER_FILE"
+  else
+    echo "anthropic (default)"
+  fi
+}
+
+set_provider() {
+  local provider="$1"
+  mkdir -p "$(dirname "$PROVIDER_FILE")"
+  echo "$provider" > "$PROVIDER_FILE"
+  echo "Provider set to: $provider"
+  echo "To use immediately, run: export OPENCODE_PROVIDER=$provider"
+  echo "Or source this in your shell: source ~/.zshrc  # or bashrc"
+}
+
+reset_config() {
+  if [[ -f "$PROVIDER_FILE" ]]; then
+    rm "$PROVIDER_FILE"
+    echo "Provider configuration reset to default (anthropic)"
+  else
+    echo "No provider configuration to reset"
+  fi
+}
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    usage
+    exit 0
+  fi
+
+  case "$1" in
+    -p|--provider)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --provider requires a value" >&2
+        exit 1
+      fi
+      set_provider "$2"
+      ;;
+    -s|--show)
+      show_config
+      ;;
+    -r|--reset)
+      reset_config
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

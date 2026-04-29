@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+diff=$(git diff --cached 2>/dev/null)
+if [[ -z "$diff" ]]; then
+  echo "error: no staged changes" >&2
+  exit 1
+fi
+
+branch=$(git branch --show-current 2>/dev/null || true)
+
+OPENCODE_PROVIDER="${OPENCODE_PROVIDER:-anthropic}"
+
+read -r -d '' prompt << EOF || true
+Generate a conventional commit message for these staged changes.
+
+Format:   type(scope): description
+Types:    feat, fix, docs, style, refactor, perf, test, chore, ci, build
+scope:    optional — most-affected directory or module
+desc:     imperative mood, lowercase, no trailing period, ≤72 chars
+body:     only when the why isn't obvious; blank line after subject
+
+Output ONLY the commit message. No explanation. No markdown fences.${branch:+
+
+Branch: $branch}
+
+Staged diff:
+$diff
+EOF
+
+export OPENCODE_PROVIDER
+
+printf '%s' "$prompt" | opencode --provider "$OPENCODE_PROVIDER" \
+  --allowedTools "" \
+  --output-format text \
+  --no-session-persistence
