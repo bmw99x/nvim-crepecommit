@@ -56,7 +56,12 @@ cp opencode-git-commit-msg ~/.local/bin/opencode-git-commit-msg
 cp opencode-setup-provider ~/.local/bin/opencode-setup-provider
 chmod +x ~/.local/bin/opencode-git-commit-msg
 chmod +x ~/.local/bin/opencode-setup-provider
+
+# Ensure ~/.local/bin is in your PATH (add to ~/.zshrc if needed)
+export PATH="$HOME/.local/bin:$PATH"
 ```
+
+> **Note:** If `command not found` errors occur, restart your terminal or run `source ~/.zshrc` to reload the PATH.
 
 ### 2. Set up provider (opencode only)
 
