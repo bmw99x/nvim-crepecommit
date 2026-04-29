@@ -42,7 +42,7 @@ local function gen_commit_msg()
   end))
 
   local stdout, stderr = {}, {}
-  vim.fn.jobstart("git-commit-msg", {
+  vim.fn.jobstart("opencode-git-commit-msg", {
     stdout_buffered = true,
     stderr_buffered = true,
     on_stdout = function(_, data) vim.list_extend(stdout, data) end,
