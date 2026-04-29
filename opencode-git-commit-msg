@@ -9,7 +9,8 @@ fi
 
 branch=$(git branch --show-current 2>/dev/null || true)
 
-OPENCODE_PROVIDER="${OPENCODE_PROVIDER:-anthropic}"
+OPENCODE_PROVIDER="${OPENCODE_PROVIDER:-opencode-go}"
+OPENCODE_MODEL="${OPENCODE_MODEL:-glm-5.1}"
 
 read -r -d '' prompt << EOF || true
 Generate a conventional commit message for these staged changes.
@@ -30,7 +31,9 @@ EOF
 
 export OPENCODE_PROVIDER
 
-printf '%s' "$prompt" | opencode --provider "$OPENCODE_PROVIDER" \
+printf '%s' "$prompt" | opencode \
+  --provider "$OPENCODE_PROVIDER" \
+  --model "$OPENCODE_MODEL" \
   --allowedTools "" \
   --output-format text \
   --no-session-persistence
