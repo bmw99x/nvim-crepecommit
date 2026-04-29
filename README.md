@@ -28,6 +28,8 @@ When it lands, the buffer is editable — fix anything before confirming.
 `<CR>` inserts into your gitcommit buffer or yanks to clipboard if you're
 not in one. `q` or `<Esc>` to bail.
 
+`<leader>gW` does the same but with `--no-verify` flag to bypass commit hooks.
+
 ## Supported AI Providers
 
 This plugin works with two AI CLI tools:
@@ -69,16 +71,21 @@ Drop `nvim/git.lua` into your lazy.nvim config:
 
 ### 3. Configure (optional)
 
-The plugin supports configuration to select your preferred commit script:
+The plugin supports configuration:
 
 ```lua
 -- In your nvim config, call setup() to configure:
 require("plugins.git").setup({
-  command = "opencode-git-commit-msg"  -- or "git-commit-msg"
+  command = "opencode-git-commit-msg",  -- or "git-commit-msg"
+  bypass_hooks = false,                  -- default: false
 })
 ```
 
 **Default:** `opencode-git-commit-msg` (GLM-5.1 via opencode-go)
+
+**Keybinds:**
+- `<leader>gC` — Generate commit message
+- `<leader>gW` — Generate commit message with `--no-verify` (skip hooks)
 
 ### 4. Set up provider (opencode only)
 

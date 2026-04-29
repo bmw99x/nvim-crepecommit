@@ -1,8 +1,9 @@
 local config = {
   command = "opencode-git-commit-msg",
+  bypass_hooks = false,
 }
 
-local function gen_commit_msg()
+local function gen_commit_msg(bypass_hooks)
   local src_win = vim.api.nvim_get_current_win()
   local src_buf = vim.api.nvim_get_current_buf()
   local src_ft  = vim.bo[src_buf].filetype
@@ -20,7 +21,7 @@ local function gen_commit_msg()
     height     = height,
     style      = "minimal",
     border     = "rounded",
-    title      = "  Commit Message ",
+    title      = bypass_hooks and "  Commit (skip hooks) " or "  Commit Message ",
     title_pos  = "center",
     footer     = " <CR> confirm · q cancel ",
     footer_pos = "center",
@@ -45,8 +46,13 @@ local function gen_commit_msg()
     vim.bo[buf].modifiable = false
   end))
 
+  local cmd = config.command
+  if bypass_hooks then
+    cmd = cmd .. " --no-verify"
+  end
+
   local stdout, stderr = {}, {}
-  vim.fn.jobstart(config.command, {
+  vim.fn.jobstart(cmd, {
     stdout_buffered = true,
     stderr_buffered = true,
     on_stdout = function(_, data) vim.list_extend(stdout, data) end,
@@ -68,7 +74,7 @@ local function gen_commit_msg()
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, stdout)
         vim.bo[buf].filetype = "gitcommit"
         if #stdout > 0 then
-          vim.api.nvim_win_set_cursor(win, { 1, #stdout[1] })
+          vim.nvim_win_set_cursor(win, { 1, #stdout[1] })
         end
       end)
     end,
@@ -145,7 +151,8 @@ return {
   {
     "lewis6991/gitsigns.nvim",
     keys = {
-      { "<leader>gC", gen_commit_msg, desc = "Generate commit message" },
+      { "<leader>gC", function() gen_commit_msg(false) end, desc = "Generate commit message" },
+      { "<leader>gW", function() gen_commit_msg(true) end, desc = "Generate commit message (skip hooks)" },
     },
   },
 }
