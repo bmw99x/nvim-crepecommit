@@ -1,3 +1,7 @@
+local config = {
+  command = "opencode-git-commit-msg",
+}
+
 local function gen_commit_msg()
   local src_win = vim.api.nvim_get_current_win()
   local src_buf = vim.api.nvim_get_current_buf()
@@ -42,7 +46,7 @@ local function gen_commit_msg()
   end))
 
   local stdout, stderr = {}, {}
-  vim.fn.jobstart("opencode-git-commit-msg", {
+  vim.fn.jobstart(config.command, {
     stdout_buffered = true,
     stderr_buffered = true,
     on_stdout = function(_, data) vim.list_extend(stdout, data) end,
@@ -93,6 +97,12 @@ local function gen_commit_msg()
 end
 
 return {
+  setup = function(opts)
+    if opts then
+      config = vim.tbl_deep_extend("force", config, opts)
+    end
+  end,
+
   {
     "lewis6991/gitsigns.nvim",
     opts = {

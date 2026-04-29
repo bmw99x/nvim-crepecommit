@@ -36,9 +36,7 @@ This plugin works with two AI CLI tools:
 |---|---|---|
 | **Script** | `git-commit-msg` | `opencode-git-commit-msg` |
 | **Models** | Anthropic (Claude) | 75+ providers (GLM, Kimi, Qwen, DeepSeek, etc.) |
-| **Setup** | Just works | Provider setup required |
-| **nvim spec** | `nvim/git.lua` | `nvim/opencode-git.lua` |
-| **Inline skill** | `claude-plugin/` | `opencode/skills/` |
+| **nvim config** | `command = "git-commit-msg"` | `command = "opencode-git-commit-msg"` |
 
 ## Installation
 
@@ -56,14 +54,33 @@ cp opencode-git-commit-msg ~/.local/bin/opencode-git-commit-msg
 cp opencode-setup-provider ~/.local/bin/opencode-setup-provider
 chmod +x ~/.local/bin/opencode-git-commit-msg
 chmod +x ~/.local/bin/opencode-setup-provider
-
-# Ensure ~/.local/bin is in your PATH (add to ~/.zshrc if needed)
-export PATH="$HOME/.local/bin:$PATH"
 ```
 
-> **Note:** If `command not found` errors occur, restart your terminal or run `source ~/.zshrc` to reload the PATH.
+> **Note:** Ensure `~/.local/bin` is in your PATH. Add `export PATH="$HOME/.local/bin:$PATH"` to `~/.zshrc` if needed. Restart terminal or run `source ~/.zshrc` after installation.
 
-### 2. Set up provider (opencode only)
+### 2. Add the nvim spec
+
+Drop `nvim/git.lua` into your lazy.nvim config:
+
+```lua
+-- lazy.nvim
+{ import = "plugins.git" }
+```
+
+### 3. Configure (optional)
+
+The plugin supports configuration to select your preferred commit script:
+
+```lua
+-- In your nvim config, call setup() to configure:
+require("plugins.git").setup({
+  command = "opencode-git-commit-msg"  -- or "git-commit-msg"
+})
+```
+
+**Default:** `opencode-git-commit-msg` (GLM-5.1 via opencode-go)
+
+### 4. Set up provider (opencode only)
 
 ```bash
 # Show current config
@@ -80,16 +97,6 @@ See all [opencode providers](https://opencode.ai/docs/providers).
 
 **GLM-5.1**: Subscribe to [OpenCode Go](https://opencode.ai/go) ($5 first month, then $10/mo).
 
-### 3. Add the nvim spec
-
-```lua
--- For Claude Code
-{ import = "plugins.git" }
-
--- For opencode
-{ import = "plugins.opencode-git" }
-```
-
 The keymap is `<leader>gC`. No other setup required.
 
 ## Files
@@ -98,8 +105,8 @@ The keymap is `<leader>gC`. No other setup required.
 git-commit-msg              Claude Code script
 opencode-git-commit-msg     opencode script (defaults to GLM-5.1 via opencode-go)
 opencode-setup-provider     Provider configuration script
-nvim/git.lua                lazy.nvim spec — Claude Code
-nvim/opencode-git.lua       lazy.nvim spec — opencode
+opencode.json               opencode config with all tools disabled
+nvim/git.lua                lazy.nvim spec with configurable command
 claude-plugin/              Claude Code /git-commit skill
 opencode/skills/            opencode /git-commit skill
 ```
