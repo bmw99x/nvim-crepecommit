@@ -10,7 +10,7 @@ fi
 branch=$(git branch --show-current 2>/dev/null || true)
 
 OPENCODE_PROVIDER="${OPENCODE_PROVIDER:-opencode-go}"
-OPENCODE_MODEL="${OPENCODE_MODEL:-glm-5.1}"
+OPENCODE_MODEL="${OPENCODE_MODEL:-opencode-go/glm-5.1}"
 
 read -r -d '' prompt << EOF || true
 Generate a conventional commit message for these staged changes.
@@ -29,11 +29,10 @@ Staged diff:
 $diff
 EOF
 
-export OPENCODE_PROVIDER
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$SCRIPT_DIR}"
 
-printf '%s' "$prompt" | opencode \
-  --provider "$OPENCODE_PROVIDER" \
+OPENCODE_CONFIG_DIR="$SCRIPT_DIR" opencode run "$prompt" \
   --model "$OPENCODE_MODEL" \
-  --allowedTools "" \
-  --output-format text \
-  --no-session-persistence
+  --no-share \
+  2>&1
