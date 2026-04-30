@@ -81,7 +81,7 @@ require("plugins.git").setup({
 })
 ```
 
-**Default:** `opencode-git-commit-msg` (GLM-5.1 via opencode-go)
+**Default:** `opencode-git-commit-msg` (DeepSeek V4 Flash via opencode-go)
 
 **Keybinds:**
 - `<leader>gC` — Generate commit message
@@ -94,7 +94,7 @@ require("plugins.git").setup({
 opencode-setup-provider --show
 
 # Choose a provider
-opencode-setup-provider --provider opencode-go   # GLM-5.1, Kimi K2.6, Qwen 3.6, DeepSeek V4 ($5/mo)
+opencode-setup-provider --provider opencode-go   # DeepSeek V4 Flash, Kimi K2.6, Qwen 3.6, GLM-5.1 ($5/mo)
 opencode-setup-provider --provider anthropic     # Claude models
 opencode-setup-provider --provider openai        # GPT models
 opencode-setup-provider --provider ollama        # Local models
@@ -102,7 +102,7 @@ opencode-setup-provider --provider ollama        # Local models
 
 See all [opencode providers](https://opencode.ai/docs/providers).
 
-**GLM-5.1**: Subscribe to [OpenCode Go](https://opencode.ai/go) ($5 first month, then $10/mo).
+**DeepSeek V4 Flash**: Subscribe to [OpenCode Go](https://opencode.ai/go) ($5 first month, then $10/mo).
 
 The keymap is `<leader>gC`. No other setup required.
 
@@ -110,7 +110,7 @@ The keymap is `<leader>gC`. No other setup required.
 
 ```
 git-commit-msg              Claude Code script
-opencode-git-commit-msg     opencode script (defaults to GLM-5.1 via opencode-go)
+opencode-git-commit-msg     opencode script (defaults to DeepSeek V4 Flash via opencode-go)
 opencode-setup-provider     Provider configuration script
 opencode.json               opencode config with all tools disabled
 nvim/git.lua                lazy.nvim spec with configurable command

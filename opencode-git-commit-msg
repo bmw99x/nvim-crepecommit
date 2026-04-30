@@ -10,7 +10,7 @@ fi
 branch=$(git branch --show-current 2>/dev/null || true)
 
 OPENCODE_PROVIDER="${OPENCODE_PROVIDER:-opencode-go}"
-OPENCODE_MODEL="${OPENCODE_MODEL:-opencode-go/glm-5.1}"
+OPENCODE_MODEL="${OPENCODE_MODEL:-opencode-go/deepseek-v4-flash}"
 
 read -r -d '' prompt << EOF || true
 Generate a conventional commit message for these staged changes.
