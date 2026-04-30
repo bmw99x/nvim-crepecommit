@@ -52,9 +52,10 @@ local function gen_commit_msg(bypass_hooks)
   end
 
   local stdout, stderr = {}, {}
-  vim.fn.jobstart(cmd, {
+  local job_id = vim.fn.jobstart(cmd, {
     stdout_buffered = true,
     stderr_buffered = true,
+    stdin = "null",
     on_stdout = function(_, data) vim.list_extend(stdout, data) end,
     on_stderr = function(_, data) vim.list_extend(stderr, data) end,
     on_exit = function(_, code)
@@ -68,17 +69,30 @@ local function gen_commit_msg(bypass_hooks)
           vim.bo[buf].modifiable = false
           return
         end
-        while #stdout > 0 and stdout[#stdout] == "" do
-          table.remove(stdout)
+        local clean = {}
+        for _, line in ipairs(stdout) do
+          line = line:gsub("\27%[[%d;]*[A-Za-z]", "")
+          if line ~= "" and not line:match("^>%s") then
+            table.insert(clean, line)
+          end
         end
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, stdout)
+        while #clean > 0 and clean[#clean] == "" do
+          table.remove(clean)
+        end
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, clean)
         vim.bo[buf].filetype = "gitcommit"
-        if #stdout > 0 then
-          vim.nvim_win_set_cursor(win, { 1, #stdout[1] })
+        if #clean > 0 then
+          vim.api.nvim_win_set_cursor(win, { 1, #clean[1] })
         end
       end)
     end,
   })
+  if job_id <= 0 then
+    timer:stop()
+    vim.bo[buf].modifiable = true
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "error: command not found: " .. cmd })
+    vim.bo[buf].modifiable = false
+  end
 
   local function confirm()
     if not vim.api.nvim_win_is_valid(win) then return end
