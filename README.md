@@ -25,8 +25,8 @@ only when the why isn't obvious from the diff alone.
 
 `<leader>gC` opens a floating buffer with a spinner while it generates.
 When it lands, the buffer is editable — fix anything before confirming.
-`<CR>` inserts into your gitcommit buffer or yanks to clipboard if you're
-not in one. `q` or `<Esc>` to bail.
+`<CR>` runs `git commit` with the message. A second spinner shows while it
+commits. `q` or `<Esc>` to bail.
 
 `<leader>gW` does the same but with `--no-verify` flag to bypass commit hooks.
 

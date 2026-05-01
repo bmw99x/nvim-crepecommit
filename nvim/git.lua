@@ -23,7 +23,7 @@ local function gen_commit_msg(bypass_hooks)
     border     = "rounded",
     title      = bypass_hooks and "  Commit (skip hooks) " or "  Commit Message ",
     title_pos  = "center",
-    footer     = " <CR> confirm · q cancel ",
+    footer     = " <CR> commit · q cancel ",
     footer_pos = "center",
   })
 
@@ -101,13 +101,69 @@ local function gen_commit_msg(bypass_hooks)
       table.remove(lines)
     end
     vim.api.nvim_win_close(win, true)
-    if src_ft == "gitcommit" then
-      vim.api.nvim_buf_set_lines(src_buf, 0, 0, false, lines)
-      vim.api.nvim_set_current_win(src_win)
-    else
-      vim.fn.setreg("+", table.concat(lines, "\n"))
-      vim.notify("Commit message copied", vim.log.levels.INFO)
+
+    local message = table.concat(lines, "\n")
+    if message == "" or message:match("^%s*Generating") then
+      vim.notify("Empty or incomplete commit message, aborting", vim.log.levels.WARN)
+      return
     end
+
+    -- Spinner float while committing
+    local cbuf = vim.api.nvim_create_buf(false, true)
+    vim.bo[cbuf].bufhidden = "wipe"
+    local cwin = vim.api.nvim_open_win(cbuf, false, {
+      relative   = "editor",
+      row        = math.floor((vim.o.lines - 3) / 2),
+      col        = math.floor((vim.o.columns - 30) / 2),
+      width      = 30,
+      height     = 3,
+      style      = "minimal",
+      border     = "rounded",
+      title      = " Committing… ",
+      title_pos  = "center",
+    })
+
+    local cspinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+    local cidx = 1
+    vim.api.nvim_buf_set_lines(cbuf, 0, -1, false, { "", "  " .. cspinner[1] .. "  Committing…", "" })
+
+    local ctimer = uv.new_timer()
+    ctimer:start(80, 80, vim.schedule_wrap(function()
+      if not vim.api.nvim_buf_is_valid(cbuf) then
+        ctimer:stop()
+        return
+      end
+      cidx = (cidx % #cspinner) + 1
+      vim.api.nvim_buf_set_lines(cbuf, 1, 2, false, { "  " .. cspinner[cidx] .. "  Committing…" })
+    end))
+
+    local tmpfile = vim.fn.tempname()
+    local f = io.open(tmpfile, "w")
+    if f then
+      f:write(message .. "\n")
+      f:close()
+    end
+
+    local git_cmd = { "git", "commit", "-F", tmpfile }
+    if bypass_hooks then
+      table.insert(git_cmd, "--no-verify")
+    end
+
+    vim.system(git_cmd, {}, function(obj)
+      vim.schedule(function()
+        ctimer:stop()
+        if vim.api.nvim_win_is_valid(cwin) then
+          vim.api.nvim_win_close(cwin, true)
+        end
+        vim.fn.delete(tmpfile)
+        if obj.code == 0 then
+          vim.notify("Committed successfully", vim.log.levels.INFO)
+        else
+          local err = (obj.stderr or "") ~= "" and obj.stderr or (obj.stdout or "unknown error")
+          vim.notify("Commit failed: " .. err:gsub("%s+", " "):sub(1, 200), vim.log.levels.ERROR)
+        end
+      end)
+    end)
   end
 
   local opts = { buffer = buf, nowait = true }
