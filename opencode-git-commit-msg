@@ -35,4 +35,14 @@ CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$SCRIPT_DIR}"
 OPENCODE_CONFIG_DIR="$SCRIPT_DIR" opencode run "$prompt" \
   --model "$OPENCODE_MODEL" \
   --no-share \
-  2>&1
+  2>/dev/null \
+  | awk '
+    { gsub(/\033\[[0-9;]*[A-Za-z]/, "") }
+    /^>/ { next }
+    !NF && !started { next }
+    { started = 1; lines[++n] = $0 }
+    END {
+      while (n > 0 && !length(lines[n])) n--
+      for (i = 1; i <= n; i++) print lines[i]
+    }
+  '

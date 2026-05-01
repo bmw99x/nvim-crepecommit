@@ -147,6 +147,11 @@ customCommands:
     command: "opencode-git-commit-msg"
     loadingText: "AI generating commit message..."
     description: "AI generate commit message"
+  - key: "<c-w>"
+    context: "files"
+    command: "opencode-git-commit-msg | git commit --no-verify -F -"
+    loadingText: "AI generating commit message..."
+    description: "AI commit (skip hooks)"
 ```
 
 Then in lazygit: stage files, press `c` to open the commit panel, press
