@@ -34,23 +34,25 @@ commits. `q` or `<Esc>` to bail.
 
 This plugin works with two AI CLI tools:
 
-| | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | [opencode](https://opencode.ai) |
-|---|---|---|
-| **Script** | `git-commit-msg` | `opencode-git-commit-msg` |
-| **Models** | Anthropic (Claude) | 75+ providers (GLM, Kimi, Qwen, DeepSeek, etc.) |
-| **nvim config** | `command = "git-commit-msg"` | `command = "opencode-git-commit-msg"` |
+|                 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | [opencode](https://opencode.ai)                 |
+| --------------- | ------------------------------------------------------------- | ----------------------------------------------- |
+| **Script**      | `git-commit-msg`                                              | `opencode-git-commit-msg`                       |
+| **Models**      | Anthropic (Claude)                                            | 75+ providers (GLM, Kimi, Qwen, DeepSeek, etc.) |
+| **nvim config** | `command = "git-commit-msg"`                                  | `command = "opencode-git-commit-msg"`           |
 
 ## Installation
 
 ### 1. Install the script for your chosen AI CLI
 
 **Claude Code** (Anthropic, no config needed):
+
 ```bash
 cp git-commit-msg ~/.local/bin/git-commit-msg
 chmod +x ~/.local/bin/git-commit-msg
 ```
 
 **opencode** (any model, provider setup required):
+
 ```bash
 cp opencode-git-commit-msg ~/.local/bin/opencode-git-commit-msg
 cp opencode-setup-provider ~/.local/bin/opencode-setup-provider
@@ -84,6 +86,7 @@ require("plugins.git").setup({
 **Default:** `opencode-git-commit-msg` (DeepSeek V4 Flash via opencode-go)
 
 **Keybinds:**
+
 - `<leader>gC` — Generate commit message
 - `<leader>gW` — Generate commit message with `--no-verify` (skip hooks)
 
@@ -126,3 +129,26 @@ Both AI CLIs have `/git-commit` skill support:
 - **opencode**: `opencode/skills/git-commit/SKILL.md`
 
 Generate commit messages from within a session instead of triggering the nvim plugin.
+
+## LazyGit Integration
+
+Use the script directly from lazygit's commit panel to generate messages without
+leaving the TUI.
+
+**Requirements:** the script must be in `$PATH` (see Installation step 1).
+
+Add this to your lazygit config (`~/.config/lazygit/config.yml` on Linux,
+`~/Library/Application Support/lazygit/config.yml` on macOS):
+
+```yaml
+customCommands:
+  - key: "<c-g>"
+    context: "commitMessage"
+    command: "opencode-git-commit-msg"
+    loadingText: "AI generating commit message..."
+    description: "AI generate commit message"
+```
+
+Then in lazygit: stage files, press `c` to open the commit panel, press
+`Ctrl+G`. The generated message fills the commit buffer — edit before
+confirming.
